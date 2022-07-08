@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <script src="https://unpkg.com/vue@next"></script>
+  <meta charset="utf-8">
+  <link rel=stylesheet type="text/css" href="calendar.css">
+  <title></title>
+</head>
+
+<body>
+  <div id="app" class="">
+    <!-- if click day, show to do screen -->
+    <schedule-screen v-if="isShowToDoList" :date="selectDate" :schedule="selectDaySchedule" @close="isShowToDoList=false" @add-list-item="addListItem" @del-list-item="delListItem"></schedule-screen>
+    <!-- title and change month button -->
+    <div id="contianerTitle">
+      <input type="button" name="" value="＜" @test="showListContent()" @click="preMonth()">
+      {{ dateTitle }}
+      <input type="button" name="" value="＞" @click="nextMonth()">
+    </div>
+    <!-- week header -->
+    <div id="contianerWeeks">
+      <div v-text="weekName" v-for="weekName in weekNames"></div>
+    </div>
+    <!-- day component -->
+    <div id="contianerDays">
+      <date-grid :day="dayObj" v-for="dayObj in canlenderArr" @show-todo-list="showListContent"></date-grid>
+    </div>
+  </div>
+</body>
+
+<script type="text/javascript">
+  const {
+    ref,
+    computed
+  } = Vue;
+
+  var app = Vue.createApp({
+    setup() {
+      const defaultSchedule = ref([]);
+      /*
+      defaultSchedule formate
+      {
+        id: date.getTime(),
+        date: 'yyyy-m-d',
+        content: string,
+        state: bool,
+        edit: bool
+      }
+      */
+      const isShowToDoList = ref(false);
+      const date = ref(new Date());
+      const selectDate = ref("");
+
+      const nextMonth = function() {
+        var dateNextMonth = new Date(date.value.getTime());
+        dateNextMonth.setDate(this.dayCountOfMonth);
+        dateNextMonth = new Date(dateNextMonth.getTime() + (60 * 60 * 24 * 1000));
+        date.value = dateNextMonth;
+      }
+
+      const preMonth = function() {
+        var date = new Date(this.date.getTime());
+        date.setDate(1);
+        date = new Date(date.getTime() - (60 * 60 * 24 * 1000));
+        this.date = date;
+      }
+
+      const addListItem = function(date) {
+        defaultSchedule.value.push({
+          id: new Date().getTime(),
+          date: selectDate.value,
+          content: 'edit to do content',
+          state: false,
+          edit: true
+        });
+      }
+
+      const delListItem = function(id) {
+        defaultSchedule.value = defaultSchedule.value.filter((item) => {
+          return item.id != id;
+        })
+      }
+
+      const showListContent = function(dateStr) {
+        isShowToDoList.value = true;
+        selectDate.value = dateStr;
+      };
+
+      const selectDaySchedule = computed(() => {
+        return defaultSchedule.value.filter((v) => {
+          return v.date == selectDate.value;
+        });
+      });
+
+      const dateTitle = computed(() => {
+        return date.value.getFullYear() + '年' + (date.value.getMonth() + 1) + '月';
+      });
+
+      const dayCountOfMonth = computed(() => {
+        var allDayDate = new Date(date.value.getTime());
+        allDayDate.setDate(28);
+        allDayDate = new Date(allDayDate.getTime() + 60 * 60 * 24 * 4 * 1000);
+        allDayDate.setDate(1);
+        allDayDate = new Date(allDayDate.getTime() - 60 * 60 * 24 * 1000);
+        return allDayDate.getDate();
+      });
+
+      const canlenderArr = computed(() => {
+        console.log("canlenderArr");
+        var nowCanlenderContent = [],
+          today = new Date(),
+          startDate = new Date(date.value.getTime()),
+          nowMonth = startDate.getMonth();
+
+        startDate.setDate(1);
+        startDate = new Date(startDate.getTime() - (startDate.getDay() * 24 * 60 * 60 * 1000));
+        let dateStr = startDate.getFullYear() + '-' + (startDate.getMonth() + 1) + '-' + startDate.getDate();
+        for (var i = 0; i < 42; i++) {
+          nowCanlenderContent.push({
+            date: startDate.toLocaleDateString().replaceAll('/', '-'),
+            isNowMonth: nowMonth != startDate.getMonth(),
+            isToday: today.getMonth() == startDate.getMonth() && today.getDate() == startDate.getDate(),
+            isHoliday: i % 7 == 0 || i % 7 == 6
+          });
+          startDate = new Date(startDate.getTime() + (24 * 60 * 60 * 1000));
+        }
+        return nowCanlenderContent;
+      });
+
+      return {
+        isShowToDoList,
+        date,
+        selectDate,
+        selectDaySchedule,
+        weekNames: ['週日', '週一', '週二', '週三', '週四', '週五', '週六'],
+        nextMonth,
+        preMonth,
+        dateTitle,
+        dayCountOfMonth,
+        canlenderArr,
+        showListContent,
+        addListItem,
+        delListItem
+      };
+    }
+  });
+
+  app.directive('focus', {
+    mounted(el) {
+      el.focus();
+    }
+  })
+
+  app.component('date-grid', {
+    template: `
+    <div @click="emitShowToDoList" :class="{'grid-day':true, 'gary': props.day.isNowMonth, 'red': props.day.isToday, 'holiday': props.day.isHoliday}">
+      {{ dayOfdate }}
+    </div>
+    `,
+    props: ['day'],
+    setup(props, context) {
+      const dayOfdate = computed(() => {
+        return props.day.date.split('-')[2];
+      });
+
+      const emitShowToDoList = () => {
+        context.emit('show-todo-list', props.day.date);
+      };
+
+      return {
+        props,
+        dayOfdate,
+        emitShowToDoList
+      };
+    }
+  });
+
+  app.component('schedule-screen', {
+    template: `
+    <div id="contianerToDoList" @click="close">
+      <div id="contentToDoList" @click.stop="">
+        <div id="title">
+          <div>
+            {{ dateTitle }}
+          </div>
+        </div>
+        <div id="contianerList">
+          <template v-for="listItem in props.schedule">
+            <div class="listItem-container">
+              <input type="checkbox" v-model="listItem.state">
+              <div class="listItem-text">
+                <input class="listItem-input " v-focus v-if="listItem.edit" type="text" v-model="listItem.content" @blur="listItem.edit = false;"
+                @keyup.enter="listItem.edit=false;">
+                <div v-else class="" @click="listItem.edit=true">{{listItem.content}}</div>
+              </div>
+              <div class="listItem-btn-del" @click="emit('del-list-item', listItem.id)"></div>
+            </div>
+          </template>
+        </div>
+        <div id="btnAddList" @click="emit('add-list-item')">
+          <div>
+            ＋
+          </div>
+        </div>
+      </div>
+    </div>
+    `,
+    props: ['date', 'schedule'],
+    setup(props, context) {
+      const close = function() {
+        context.emit('close', props.schedule)
+      }
+
+      const dateTitle = computed(() => {
+        let dateArr = props.date.split('-');
+        return dateArr[0] + '年' + dateArr[1] + '月' + dateArr[2] + '日';
+      });
+
+      return {
+        props,
+        emit: context.emit,
+        close,
+        dateTitle
+      }
+    }
+  });
+
+  app.mount('#app');
+</script>
+
+</html>

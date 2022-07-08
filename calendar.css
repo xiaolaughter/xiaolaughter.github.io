@@ -1,0 +1,144 @@
+body {
+  margin: 0px;
+}
+
+#contianerTitle {
+  display: flex;
+  justify-content: space-evenly;
+  font-size: 25px;
+}
+
+#contianerWeeks {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+#contianerDays {
+  display: flex;
+  flex-wrap: wrap;
+  border-left: 1px solid black;
+  border-top: 1px solid black;
+}
+
+#contianerToDoList {
+  width: 100vw;
+  height: 100vh;
+  background: #00000066;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#contentToDoList {
+  width: 50vw;
+  height: 95vh;
+  border-radius: 5px;
+  background: #fff7ea;
+}
+
+#title {
+  width: 100%;
+  height: 10%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom: solid 3px #000000;
+}
+
+#title>div {
+  text-align: center;
+  font-weight: bold;
+  font-size: 30px;
+}
+
+#contianerList {
+  width: 100%;
+  height: 80%;
+}
+
+#btnAddList {
+  width: 100%;
+  height: 10%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-top: solid 3px #000000;
+  box-sizing: border-box;
+}
+
+#btnAddList:hover {
+  background: #59d159;
+}
+
+#btnAddList>div {
+  font-size: 35px;
+  font-weight: bolder;
+}
+
+.grid-day {
+  line-height: 13vh;
+  height: 13vh;
+  width: calc(100% / 7);
+  text-align: center;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
+  font-weight: bolder;
+  font-size: 20px;
+  box-sizing: border-box;
+}
+
+.gary {
+  color: #b7b1ad;
+}
+
+.red {
+  color: #ff0000;
+}
+
+.holiday {
+  background: gainsboro;
+}
+
+.listItem-container {
+  display: grid;
+  height: 2em;
+  grid-template-columns: repeat(20, 1fr);
+}
+
+.listItem-text {
+  grid-column: 3/17;
+  display: flex;
+  align-items: center;
+}
+
+.listItem-input {
+  width: 100%;
+  height: 70%;
+}
+
+.listItem-btn-del {
+  position: relative;
+
+  width: 100%;
+  grid-column: 20;
+}
+
+.listItem-btn-del:hover {
+  border: solid 2px #000000;
+  box-sizing: border-box;
+}
+
+.listItem-btn-del::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  content: "\274c";
+  font-size: 20px;
+  line-height: 32px;
+  text-align: center;
+}
